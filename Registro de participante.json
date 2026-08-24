@@ -1,0 +1,2050 @@
+{
+  "name": "Registro de participante",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Teléfono",
+              "lookupValue": "={{ $json.numero }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1552,
+        672
+      ],
+      "id": "296b054b-bc51-4aa4-bd5a-a56f1a6e89f4",
+      "name": "Buscar usuario",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {
+          "messageStatusUpdates": [
+            "all"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        672
+      ],
+      "id": "a6b159c2-725f-4a5d-99be-879048276c5d",
+      "name": "WhatsApp Trigger",
+      "webhookId": "42ab1b16-9872-474b-9841-e4d43834ec38",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "Oy2uqyz9Uzda2sGG",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function limpiarTelefono(numero) {\n  if (!numero) return '';\n\n  let limpio = numero.toString().replace(/\\D/g, '');\n\n  if (limpio.startsWith('521') && limpio.length === 13) {\n    return limpio.slice(3);\n  }\n\n  if (limpio.startsWith('52') && limpio.length === 12) {\n    return limpio.slice(2);\n  }\n\n  return limpio.slice(-10);\n}\n\nconst mensaje = $json.messages?.[0];\n\nlet texto = '';\nlet numero = '';\n\nif (mensaje?.text?.body) {\n  texto = mensaje.text.body;\n}\n\nif (mensaje?.from) {\n  numero = limpiarTelefono(mensaje.from);\n}\n\nreturn {\n  json: {\n    numero: numero,\n    texto: (texto || '').trim()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1712,
+        672
+      ],
+      "id": "fb7b1183-5f5d-495d-b480-e09d2a1a1c55",
+      "name": "Extraer mensaje"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Hola {{ $('WhatsApp Trigger').item.json.messages[0].from }} 😊, no te tengo registrado.\n\nEscribe \"Register\" para empezar el proceso de registro.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        -32
+      ],
+      "id": "045684a6-f85f-4592-86d3-a581f5d6ce9b",
+      "name": "Mensaje de salida",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=¿Quieres registrarte 🤔? Responde SI o NO",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        -192
+      ],
+      "id": "6a3307e2-96ce-4883-8534-3d362f44ba7d",
+      "name": "Estructura de mensaje",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const estado = $json.Estado || 'inicio';\n\nreturn {\n  json: {\n    ...$json,\n    estado\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1392,
+        672
+      ],
+      "id": "380ac238-791c-40d1-b13f-515298a32fec",
+      "name": "Estado de usuario"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 9,
+        "output": "={{ \n  $json.estado === 'inicio' ? 0 :\n  $json.estado === 'confirmando_registro' ? 1 :\n  $json.estado === 'esperando_registro' ? 2 :\n  $json.estado === 'esperando_nombre' ? 3 :\n  $json.estado === 'esperando_grupo' ? 4 :\n  $json.estado === 'esperando_lider' ? 5 :\n  $json.estado === 'pendiente_aprobacion' ? 6 :\n  $json.estado === 'aprobado' ? 7 :\n  $json.estado === 'rechazado' ? 8:\n  9\n}}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1232,
+        560
+      ],
+      "id": "95870b72-5330-4a8f-8c72-2cc8a96fc3aa",
+      "name": "Estado"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fbb070de-297c-4c2c-8f10-5d058f179f10",
+              "leftValue": "={{ \n/registr|register|regist/.test(\n  ($('Extraer mensaje').item.json.texto || '')\n    .toLowerCase()\n    .normalize(\"NFD\")\n    .replace(/[\\u0300-\\u036f]/g, '')\n)\n}}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -688,
+        -96
+      ],
+      "id": "f65f1f2c-5a47-4aa2-af2d-b1e998b0ede3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811348811",
+        "textBody": "=El grupo no existe. Verifica e intenta nuevamente.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        720
+      ],
+      "id": "1b36dcb4-a88e-4dc5-b89f-96e1b1cd8c89",
+      "name": "Grupo inexistente",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fbb070de-297c-4c2c-8f10-5d058f179f10",
+              "leftValue": "={{ \n['si','sí','s','yes','y','claro','ok','vale'].includes(\n  ($('Extraer mensaje').item.json.texto || '')\n    .toLowerCase()\n    .normalize(\"NFD\")\n    .replace(/[\\u0300-\\u036f]/g, '') // quita acentos\n    .trim()\n)\n}}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -688,
+        208
+      ],
+      "id": "0257b5a8-1d70-4a19-a6ab-eb3a5260f8fd",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Perfecto 👌\n¿Me regalas tu nombre completo 👇☺️ ?",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        128
+      ],
+      "id": "90e6f886-d397-40e0-a2d9-1137711cca0d",
+      "name": "Estructura de mensaje1",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "=esperando_nombre",
+            "Teléfono": "={{ $json['Teléfono'] }}"
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        128
+      ],
+      "id": "ef301587-408e-4b71-b912-8d3883ff5bda",
+      "name": "Esperando nombre",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Teléfono": "={{ $json.telefono_normalizado }}",
+            "Estado": "=confirmando_registro",
+            "ID": "={{ $json.ID }}"
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -128,
+        -192
+      ],
+      "id": "4d270ed2-79d4-471f-afd3-95b0a4046242",
+      "name": "Confirmando registro",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Ok, cuando quieras registrarte escribe \"Register\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        288
+      ],
+      "id": "c08b684f-0aba-4bb2-acaf-0153f2c3c0d2",
+      "name": "Mensaje alternativo",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "=esperando_registro",
+            "Teléfono": "={{ $json['Teléfono'] }}"
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        288
+      ],
+      "id": "05377ffb-8bb9-45c1-a161-28b9abf84a33",
+      "name": "Actualizar estado",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Ahora escribe tu grupo ☺️👉 ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        800
+      ],
+      "id": "86aba44d-4343-49c3-941c-c69bfdc5841d",
+      "name": "Estructura de mensaje2",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "=esperando_grupo",
+            "Nombre": "={{ $('Extraer mensaje').item.json.texto }}",
+            "Teléfono": "={{ $json['Teléfono'] }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -672,
+        800
+      ],
+      "id": "e9a1416d-a3df-4fd6-81fd-7d5f0ad50620",
+      "name": "Guardando nombre",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=¿Cómo se llama tu líder de grupo?",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        752
+      ],
+      "id": "32f493cd-064f-4c6e-b438-443953836a25",
+      "name": "Estructura de mensaje3",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "=esperando_lider",
+            "Grupo": "={{ $json.Grupo }}",
+            "Teléfono": "={{ $('Buscar usuario').item.json['Teléfono'] }}"
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        752
+      ],
+      "id": "50b91625-4e8d-4457-bc91-e4d10c7eef9c",
+      "name": "Guardando grupo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Líder": "={{ $('Extraer mensaje').item.json.texto }}",
+            "Teléfono": "={{ $('Buscar usuario').item.json['Teléfono'] }}",
+            "row_number": 0,
+            "Fecha de registro": "={{$now.format('D')}}",
+            "Estado": "pendiente_aprobacion"
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -672,
+        1136
+      ],
+      "id": "ce7e6d36-0c8a-4b98-9aca-c921193efd66",
+      "name": "Guardando líder",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const grupoInput = ($json.Grupo || '').toLowerCase().trim();\n\nconst filas = items.map(item => item.json);\n\n// 🔴 SI NO HAY FILAS → grupo no existe\nif (filas.length === 0) {\n  return [\n    {\n      json: {\n        ...$json,\n        grupo_valido: false\n      }\n    }\n  ];\n}\n\n// buscar coincidencia\nconst grupoEncontrado = filas.find(fila => \n  (fila.Grupo || '').toLowerCase().trim() === grupoInput\n);\n\nconst grupoExiste = !!grupoEncontrado;\n\nreturn [\n  {\n    json: {\n      ...$json,\n      grupo_valido: grupoExiste\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        688
+      ],
+      "id": "77d7940a-9bad-4a8e-bbe2-c12a3378d571",
+      "name": "Validar grupo",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b18695d9-4dd6-4de3-89a3-06d552012724",
+              "leftValue": "={{ $json.grupo_input_normalizado }}",
+              "rightValue": true,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -480,
+        976
+      ],
+      "id": "ce92ba72-e16a-4ee3-9ee9-5ee9e99c4d03",
+      "name": "¿Grupo válido?",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Tu registro fue recibido ✅\n\nTe avisaremos cuando sea autorizado.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        1136
+      ],
+      "id": "c06f2f5f-2077-4d54-b4f1-b887ef822555",
+      "name": "Agtadecimiento",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Tu registro fue aprobado ✅\nYa puedes usar el sistema.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        1632
+      ],
+      "id": "05176d14-7351-44a6-98b1-04d389a238b6",
+      "name": "Autorizado",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Tu registro todavía no ha sido aprobada ⚠️\n\nContacta con tu líder.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        1312
+      ],
+      "id": "f73b7afb-b4b2-42fc-bdae-5054d463bf71",
+      "name": "No autorizado",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "471767f4-141f-4def-abd3-72b1fe0dfb39",
+              "leftValue": "={{ $json.Grupo }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -128,
+        880
+      ],
+      "id": "dcc7e639-0348-427f-8d39-0853b2f9fc4a",
+      "name": "¿Grupo existe?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811348811",
+        "textBody": "=El grupo no existe (no uses, Gss001, gss001, GSS 001 o GSS1).",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        912
+      ],
+      "id": "d0846a87-2165-43f0-8339-c922f03f3973",
+      "name": "Grupo inexistente1",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=El grupo no es válido, intenta nuevamente",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        80,
+        944
+      ],
+      "id": "551d028e-b017-49aa-a4d2-038e61e8c163",
+      "name": "Grupo incorrecto1",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function normalizarGrupo(texto) {\n  if (!texto) return '';\n\n  let limpio = texto\n    .toLowerCase()\n    .normalize(\"NFD\")\n    .replace(/[\\u0300-\\u036f]/g, \"\")\n    .replace(/\\s+/g, \"\")\n    .replace(/[^a-z0-9]/g, \"\");\n\n  const match = limpio.match(/\\d+/);\n  if (!match) return '';\n\n  let numero = match[0].padStart(3, '0');\n\n  return `GSS${numero}`;\n}\n\nconst grupoNormalizado = normalizarGrupo(\n  $node[\"Extraer mensaje\"].json.texto\n);\n\nreturn [\n  {\n    json: {\n      ...$json,\n      grupo_input_normalizado: grupoNormalizado\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        976
+      ],
+      "id": "63ac05ac-0c9b-45ed-9be8-49d327d16d1b",
+      "name": "Normalizar texto"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1247056063,
+          "mode": "list",
+          "cachedResultName": "Grupos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1247056063"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Grupo",
+              "lookupValue": "={{ $json.grupo_input_normalizado }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        880
+      ],
+      "id": "38f1708c-53ff-4905-99a3-b518daae281b",
+      "name": "Buscar grupo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=El grupo no es válido, intenta nuevamente",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        1040
+      ],
+      "id": "ae85a1aa-62b1-406f-9250-1fc5b149c571",
+      "name": "Grupo inexistente2",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function generarID() {\n  const random = Math.random().toString(36).substring(2, 8);\n  const timestamp = Date.now().toString(36);\n  return `USR-${timestamp}-${random}`;\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n      ID: generarID()\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -192
+      ],
+      "id": "520f96e1-0896-46f5-9db6-226cc8ac65be",
+      "name": "Generador de ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "function normalizarTelefono(numero) {\n  if (!numero) return '';\n\n  // dejar solo números\n  let limpio = numero.toString().replace(/\\D/g, '');\n\n  // si viene como 521XXXXXXXXXX → quitar 521\n  if (limpio.startsWith('521') && limpio.length === 13) {\n    return limpio.slice(3);\n  }\n\n  // si viene como 52XXXXXXXXXX → quitar 52\n  if (limpio.startsWith('52') && limpio.length === 12) {\n    return limpio.slice(2);\n  }\n\n  // si ya viene como 10 dígitos → dejarlo\n  if (limpio.length === 10) {\n    return limpio;\n  }\n\n  // fallback: devolver últimos 10 dígitos\n  return limpio.slice(-10);\n}\n\nreturn [\n  {\n    json: {\n      ...$json,\n      telefono_normalizado: normalizarTelefono(\n        $item(0).$node[\"Extraer mensaje\"].json.numero\n      )\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -192
+      ],
+      "id": "4e79997b-3d4c-428d-acd8-864c5d3ae9fb",
+      "name": "Limpiar número"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Lo sentimos {{ $('WhatsApp Trigger').item.json.messages[0].from }}, fuiste rechazado del sistema.\n\nSí crees que es un error, comunicate con tu líder de grupo.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        1472
+      ],
+      "id": "ee05f09b-7bad-4de8-96a6-1c9643ba7aa3",
+      "name": "Mensaje de rechazo",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fbb070de-297c-4c2c-8f10-5d058f179f10",
+              "leftValue": "={{ \n/registr|register|regist/.test(\n  ($('Extraer mensaje').item.json.texto || '')\n    .toLowerCase()\n    .normalize(\"NFD\")\n    .replace(/[\\u0300-\\u036f]/g, '')\n)\n}}",
+              "rightValue": "=",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -688,
+        512
+      ],
+      "id": "300bf8f1-ded1-468e-a6a1-b91232326999",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Perfecto 👌\n¿Me regalas tu nombre completo 👇☺️ ?",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -304,
+        448
+      ],
+      "id": "78f5d7de-db67-4dd5-a28a-4e2841253666",
+      "name": "Estructura de mensaje4",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k",
+          "mode": "list",
+          "cachedResultName": "Base de datos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1941295069,
+          "mode": "list",
+          "cachedResultName": "Respuestas de formulario 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1RlmsydRst3uZ4EEzQU84IPHWLEblwExRAV-uTkZXn3k/edit#gid=1941295069"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "=esperando_nombre",
+            "Teléfono": "={{ $json['Teléfono'] }}"
+          },
+          "matchingColumns": [
+            "Teléfono"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Facebook",
+              "displayName": "Facebook",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Teléfono",
+              "displayName": "Teléfono",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Grupo",
+              "displayName": "Grupo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Líder",
+              "displayName": "Líder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Fecha de registro",
+              "displayName": "Fecha de registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -480,
+        448
+      ],
+      "id": "22445812-0ab3-46f4-9cc6-6366d28a60e7",
+      "name": "Esperando nombre1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "HaqNmPEHvIj8GWuj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "1063746356811247",
+        "recipientPhoneNumber": "+529811757375",
+        "textBody": "=Escribeme \"Register\" para empezar el proceso.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        624
+      ],
+      "id": "5cf2c189-1f9b-4c83-b495-f3ecace589b0",
+      "name": "Mensaje de salida1",
+      "webhookId": "31c09693-49f8-456e-9e6a-fd07c3f3e01b",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "xxOtdoB0g0VmlaUD",
+          "name": "WhatsApp account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Buscar usuario": {
+      "main": [
+        [
+          {
+            "node": "Estado de usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extraer mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer mensaje": {
+      "main": [
+        [
+          {
+            "node": "Buscar usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje de salida": {
+      "main": [
+        []
+      ]
+    },
+    "Estructura de mensaje": {
+      "main": [
+        []
+      ]
+    },
+    "Estado de usuario": {
+      "main": [
+        [
+          {
+            "node": "Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estado": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardando nombre",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalizar texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardando líder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No autorizado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje de rechazo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Autorizado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Generador de ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje de salida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Esperando nombre",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Actualizar estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperando nombre": {
+      "main": [
+        [
+          {
+            "node": "Estructura de mensaje1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmando registro": {
+      "main": [
+        [
+          {
+            "node": "Estructura de mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar estado": {
+      "main": [
+        [
+          {
+            "node": "Mensaje alternativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardando nombre": {
+      "main": [
+        [
+          {
+            "node": "Estructura de mensaje2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardando grupo": {
+      "main": [
+        [
+          {
+            "node": "Estructura de mensaje3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardando líder": {
+      "main": [
+        [
+          {
+            "node": "Agtadecimiento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar grupo": {
+      "main": [
+        []
+      ]
+    },
+    "¿Grupo válido?": {
+      "main": [
+        [
+          {
+            "node": "Buscar grupo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Grupo inexistente2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Grupo existe?": {
+      "main": [
+        [
+          {
+            "node": "Guardando grupo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Grupo incorrecto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar texto": {
+      "main": [
+        [
+          {
+            "node": "¿Grupo válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar grupo": {
+      "main": [
+        [
+          {
+            "node": "¿Grupo existe?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generador de ID": {
+      "main": [
+        [
+          {
+            "node": "Limpiar número",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar número": {
+      "main": [
+        [
+          {
+            "node": "Confirmando registro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperando nombre1": {
+      "main": [
+        [
+          {
+            "node": "Estructura de mensaje4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Esperando nombre1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensaje de salida1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timezone": "America/Mexico_City"
+  },
+  "versionId": "d319cc85-e7fd-4a22-8bca-d68a4e7cff85",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "430590594d4746e5c3ac1f654f9b7ba5c49708cab9f4c001fe784625ce2270e5"
+  },
+  "id": "ua9eBj8fGYJH4J1x",
+  "tags": []
+}
